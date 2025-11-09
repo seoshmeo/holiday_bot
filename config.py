@@ -20,6 +20,9 @@ if not OPENAI_API_KEY:
 # Модель OpenAI
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
+# Unsplash API Access Key (опционально)
+UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY", "")
+
 # Системный промпт для LLM
 SYSTEM_PROMPT = """Ты — культуролог и этнограф, эксперт по традициям празднования Рождества и Нового года в разных странах мира.
 Твоя задача — создавать яркие, детализированные и достоверные описания праздников, чтобы пользователь мог «окунуться» в атмосферу другой культуры.

@@ -4,6 +4,7 @@
 import requests
 from typing import List, Optional
 import logging
+from config import UNSPLASH_ACCESS_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -20,13 +21,13 @@ def generate_image_query(country: str, holiday_type: str) -> str:
         Строка запроса для поиска
     """
     holiday_en = "Christmas" if "Рождество" in holiday_type else "New Year"
-    query = f"{holiday_en} celebration in {country}, traditional, festive, authentic"
+    query = f"{holiday_en} {country} celebration traditional"
     return query
 
 
 def get_unsplash_images(query: str, count: int = 3) -> List[str]:
     """
-    Получает изображения из Unsplash API (без ключа - публичный доступ)
+    Получает изображения из Unsplash API
 
     Args:
         query: Поисковый запрос
@@ -35,26 +36,55 @@ def get_unsplash_images(query: str, count: int = 3) -> List[str]:
     Returns:
         Список URL изображений
     """
+    # Если нет ключа API, возвращаем пустой список
+    if not UNSPLASH_ACCESS_KEY:
+        logger.warning("UNSPLASH_ACCESS_KEY не установлен, изображения не будут загружены")
+        return []
+
     try:
-        # Используем публичный API Unsplash Source (не требует ключа)
-        # Альтернатива: можно использовать другие бесплатные API
+        # Официальный Unsplash API
+        url = "https://api.unsplash.com/search/photos"
 
-        images = []
+        headers = {
+            "Authorization": f"Client-ID {UNSPLASH_ACCESS_KEY}"
+        }
 
-        # Попробуем получить изображения через поиск
-        # Unsplash Source API: https://source.unsplash.com/
-        base_url = "https://source.unsplash.com/800x600/"
+        params = {
+            "query": query,
+            "per_page": min(count, 3),
+            "orientation": "landscape"
+        }
 
-        # Формируем URL с ключевыми словами
-        keywords = query.replace(" ", ",")
+        response = requests.get(url, headers=headers, params=params, timeout=10)
 
-        # Генерируем несколько вариантов
-        for i in range(min(count, 3)):
-            image_url = f"{base_url}?{keywords}&sig={i}"
-            images.append(image_url)
+        if response.status_code == 200:
+            data = response.json()
+            images = []
 
-        logger.info(f"Получено {len(images)} изображений для запроса: {query}")
-        return images
+            for photo in data.get("results", [])[:count]:
+                # Используем regular размер для баланса качества и скорости
+                image_url = photo.get("urls", {}).get("regular")
+                if image_url:
+                    images.append(image_url)
+
+            logger.info(f"Получено {len(images)} изображений для запроса: {query}")
+            return images
+
+        elif response.status_code == 401:
+            logger.error("Неверный Unsplash API ключ")
+            return []
+
+        elif response.status_code == 403:
+            logger.error("Превышен лимит запросов Unsplash API")
+            return []
+
+        else:
+            logger.warning(f"Unsplash API вернул статус {response.status_code}")
+            return []
+
+    except requests.exceptions.Timeout:
+        logger.error("Timeout при запросе к Unsplash API")
+        return []
 
     except Exception as e:
         logger.error(f"Ошибка при получении изображений: {e}")
@@ -81,10 +111,20 @@ if __name__ == "__main__":
     # Тестирование
     print("Тестирование модуля изображений...")
 
-    images = get_holiday_images("Финляндия", "Рождество", 3)
+    if not UNSPLASH_ACCESS_KEY:
+        print("⚠️  UNSPLASH_ACCESS_KEY не установлен в .env файле")
+        print("📝 Получите ключ на https://unsplash.com/developers")
+        print("   1. Зарегистрируйтесь")
+        print("   2. Создайте приложение")
+        print("   3. Скопируйте Access Key")
+        print("   4. Добавьте в .env файл: UNSPLASH_ACCESS_KEY=ваш_ключ")
+    else:
+        images = get_holiday_images("Финляндия", "Рождество", 3)
 
-    print(f"✅ Получено {len(images)} изображений:")
-    for i, url in enumerate(images, 1):
-        print(f"   {i}. {url}")
-
-    print("\n✅ Модуль изображений работает!")
+        if images:
+            print(f"✅ Получено {len(images)} изображений:")
+            for i, url in enumerate(images, 1):
+                print(f"   {i}. {url[:80]}...")
+            print("\n✅ Модуль изображений работает!")
+        else:
+            print("❌ Изображения не получены. Проверьте API ключ и лимиты.")
