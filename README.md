@@ -6,7 +6,19 @@
 
 Telegram-бот, который генерирует информацию о том, как празднуют Рождество и Новый год в разных странах мира с помощью AI (OpenAI GPT).
 
-[Попробовать бота](https://t.me/holiday_country_bot) | [Документация](ARCHITECTURE.md) | [Деплой на сервер](SERVER_SETUP.md)
+[Попробовать бота](https://t.me/holiday_country_bot) | [Документация](ARCHITECTURE.md) | [Деплой на сервер](SERVER_SETUP.md) | [Мульти-бот сервер](MULTI_BOT_DEPLOY.md)
+
+## 🚀 Быстрый деплой
+
+### На чистый сервер:
+```bash
+curl -sSL https://raw.githubusercontent.com/seoshmeo/holiday_bot/main/deploy.sh | bash
+```
+
+### На сервер с другими ботами:
+```bash
+curl -sSL https://raw.githubusercontent.com/seoshmeo/holiday_bot/main/install_multi.sh | bash
+```
 
 ## ✨ Возможности
 
