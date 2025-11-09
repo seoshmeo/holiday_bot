@@ -1,0 +1,17 @@
+[Unit]
+Description=Holiday Traditions Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME/holiday_bot
+Environment="PATH=/home/YOUR_USERNAME/holiday_bot/venv/bin"
+ExecStart=/home/YOUR_USERNAME/holiday_bot/venv/bin/python bot.py
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/YOUR_USERNAME/holiday_bot/bot.log
+StandardError=append:/home/YOUR_USERNAME/holiday_bot/bot_error.log
+
+[Install]
+WantedBy=multi-user.target
